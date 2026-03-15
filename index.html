@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diego Valle — Games</title>
+  <meta name="description" content="Games by Diego Valle. Play Grabpack Simulator — a browser-based 3D first-person game with rope physics, pendulum swings, and puzzle doors.">
+  <meta name="theme-color" content="#1a1a2e">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Diego Valle — Games">
+  <meta property="og:description" content="Games by Diego Valle. Play Grabpack Simulator — rope physics, pendulum swings, and puzzle doors in your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="./og-image.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Diego Valle — Games">
+  <meta name="twitter:description" content="Games by Diego Valle. Grabpack Simulator and more.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════
+       CSS VARIABLES
+       ═══════════════════════════════════════ */
+    :root {
+      --bg:         #0d0d1a;
+      --bg-surface: #1a1a2e;
+      --blue:       #4ea8ff;
+      --red:        #ff4e4e;
+      --gold:       #ccaa33;
+      --text:       #c8c8d8;
+      --text-dim:   #6e6e8a;
+      --white:      #eeeef4;
+    }
+
+    /* ═══════════════════════════════════════
+       ORB CANVAS
+       ═══════════════════════════════════════ */
+    #orb-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ═══════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Noise grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--white);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    section, footer { position: relative; z-index: 1; }
+
+    /* ═══════════════════════════════════════
+       UTILITY
+       ═══════════════════════════════════════ */
+    .container {
+      width: min(1120px, 90vw);
+      margin: 0 auto;
+    }
+
+    /* ═══════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Radial glow behind title */
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 700px;
+      height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(78, 168, 255, 0.08) 0%, rgba(255, 78, 78, 0.06) 40%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Animated scanlines */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.04) 2px,
+        rgba(0, 0, 0, 0.04) 4px
+      );
+    }
+
+    .hero__content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero__badge {
+      display: inline-block;
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid rgba(204, 170, 51, 0.3);
+      padding: 0.4em 1.2em;
+      border-radius: 2px;
+      margin-bottom: 2rem;
+      animation: fadeSlideUp 0.8s ease-out both;
+    }
+
+    .hero__title {
+      font-size: clamp(4rem, 12vw, 10rem);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.15em;
+      animation: fadeSlideUp 0.8s 0.15s ease-out both;
+    }
+
+    .hero__title .blue { color: var(--blue); }
+    .hero__title .red  { color: var(--red); }
+
+    .hero__sub {
+      font-size: clamp(1rem, 2.5vw, 1.35rem);
+      color: var(--text-dim);
+      max-width: 520px;
+      margin: 0 auto 2.5rem;
+      animation: fadeSlideUp 0.8s 0.3s ease-out both;
+    }
+
+    .hero__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--bg);
+      background: var(--white);
+      padding: 1rem 2.8rem;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.3s;
+      animation: fadeSlideUp 0.8s 0.45s ease-out both;
+    }
+
+    .hero__cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--blue), var(--red));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .hero__cta:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 0 30px rgba(78, 168, 255, 0.25),
+        0 0 60px rgba(255, 78, 78, 0.15);
+    }
+    .hero__cta:hover::before { opacity: 1; }
+    .hero__cta:hover span   { color: var(--white); }
+    .hero__cta span {
+      position: relative;
+      z-index: 1;
+      transition: color 0.3s;
+    }
+    .hero__cta:active { transform: translateY(0); }
+
+    /* Scroll hint */
+    .hero__scroll {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      animation: fadeSlideUp 0.8s 0.6s ease-out both;
+    }
+
+    .hero__scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--text-dim), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    /* ── Floating hand silhouettes ── */
+    .hand-float {
+      position: absolute;
+      z-index: 0;
+      opacity: 0.06;
+      font-size: clamp(8rem, 20vw, 18rem);
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 400;
+      user-select: none;
+      pointer-events: none;
+      line-height: 1;
+    }
+    .hand-float--left {
+      left: -3vw;
+      top: 20%;
+      color: var(--blue);
+      transform: rotate(-12deg);
+      animation: floatL 8s ease-in-out infinite;
+    }
+    .hand-float--right {
+      right: -3vw;
+      bottom: 15%;
+      color: var(--red);
+      transform: rotate(8deg);
+      animation: floatR 9s ease-in-out infinite;
+    }
+
+    /* ═══════════════════════════════════════
+       FEATURES
+       ═══════════════════════════════════════ */
+    .features {
+      padding: 8rem 0 6rem;
+      position: relative;
+    }
+
+    .features__header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .features__label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+
+    .features__heading {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+    }
+
+    .features__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--bg-surface);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 2rem 1.75rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.25s;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(255, 255, 255, 0.08);
+      transform: translateY(-3px);
+    }
+    .feature-card:hover::before { opacity: 1; }
+
+    .feature-card__icon {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      margin-bottom: 1.25rem;
+      font-size: 1.4rem;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .feature-card__title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--white);
+    }
+
+    .feature-card__desc {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* Per-card accent colors */
+    .feature-card--blue   { --accent: var(--blue); }
+    .feature-card--red    { --accent: var(--red); }
+    .feature-card--gold   { --accent: var(--gold); }
+    .feature-card--white  { --accent: var(--white); }
+
+    .feature-card--blue  .feature-card__icon { color: var(--blue); }
+    .feature-card--red   .feature-card__icon { color: var(--red); }
+    .feature-card--gold  .feature-card__icon { color: var(--gold); }
+    .feature-card--white .feature-card__icon { color: var(--white); }
+
+    /* ═══════════════════════════════════════
+       CONTROLS
+       ═══════════════════════════════════════ */
+    .controls {
+      padding: 4rem 0 6rem;
+    }
+
+    .controls__inner {
+      background: var(--bg-surface);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+
+    .controls__heading {
+      font-size: 1.6rem;
+      margin-bottom: 1.5rem;
+      grid-column: 1 / -1;
+    }
+
+    .control-group__title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 32px;
+      height: 28px;
+      padding: 0 0.5em;
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+
+    .key--blue { border-color: rgba(78, 168, 255, 0.3); color: var(--blue); }
+    .key--red  { border-color: rgba(255, 78, 78, 0.3); color: var(--red); }
+
+    .control-row span {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+    }
+
+    /* ═══════════════════════════════════════
+       CTA BANNER
+       ═══════════════════════════════════════ */
+    .cta-banner {
+      padding: 6rem 0;
+      text-align: center;
+      position: relative;
+    }
+
+    .cta-banner::before {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(204, 170, 51, 0.06) 0%, transparent 60%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .cta-banner__heading {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .cta-banner__sub {
+      color: var(--text-dim);
+      margin-bottom: 2.5rem;
+      font-size: 1.05rem;
+      position: relative;
+    }
+
+    .cta-banner .hero__cta {
+      animation: none;
+    }
+
+    /* ═══════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════ */
+    footer {
+      padding: 2.5rem 0;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    footer p {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+    }
+
+    footer .credit {
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ═══════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════ */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(1); }
+      50%      { opacity: 1;   transform: scaleY(1.3); transform-origin: top; }
+    }
+
+    @keyframes floatL {
+      0%, 100% { transform: rotate(-12deg) translateY(0); }
+      50%      { transform: rotate(-8deg) translateY(-20px); }
+    }
+
+    @keyframes floatR {
+      0%, 100% { transform: rotate(8deg) translateY(0); }
+      50%      { transform: rotate(12deg) translateY(-25px); }
+    }
+
+    /* Scroll-triggered reveals */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════ */
+    @media (max-width: 768px) {
+      .controls__inner {
+        grid-template-columns: 1fr;
+        padding: 2rem 1.5rem;
+        gap: 2rem;
+      }
+      .controls__heading { grid-column: 1; }
+      .hand-float { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .hero__cta {
+        padding: 0.9rem 2rem;
+        font-size: 1rem;
+      }
+      .feature-card {
+        padding: 1.5rem 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="orb-canvas" aria-hidden="true"></canvas>
+
+  <!-- ════════════ HERO ════════════ -->
+  <section class="hero" role="banner">
+    <div class="hand-float hand-float--left" aria-hidden="true">L</div>
+    <div class="hand-float hand-float--right" aria-hidden="true">R</div>
+
+    <div class="hero__content">
+      <span class="hero__badge">Browser-Based 3D Game</span>
+      <h1 class="hero__title">
+        <span class="blue">GRAB</span><span class="red">PACK</span>
+      </h1>
+      <p class="hero__sub">
+        Swing across chasms. Wrap ropes around pillars. Solve puzzles with two hands and ten metres of cable.
+      </p>
+      <a href="/grabpack/play/" class="hero__cta" role="button">
+        <span>Play Now</span>
+      </a>
+    </div>
+
+    <div class="hero__scroll" aria-hidden="true">
+      <span>Scroll</span>
+      <div class="hero__scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ════════════ FEATURES ════════════ -->
+  <section class="features" id="features">
+    <div class="container">
+      <header class="features__header reveal">
+        <p class="features__label">What's Inside</p>
+        <h2 class="features__heading">Two Hands. Infinite Possibilities.</h2>
+      </header>
+
+      <div class="features__grid">
+        <article class="feature-card feature-card--blue reveal" style="transition-delay: 0.05s">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v0M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v6M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 16"/></svg>
+          </div>
+          <h3 class="feature-card__title">Dual Grabpack Hands</h3>
+          <p class="feature-card__desc">Blue left, red right. Each hand fires independently — grab objects, activate scanners, or latch onto swing handles.</p>
+        </article>
+
+        <article class="feature-card feature-card--red reveal" style="transition-delay: 0.1s">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20a14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          </div>
+          <h3 class="feature-card__title">Rope Physics</h3>
+          <p class="feature-card__desc">10 metres of cable that wraps realistically around pillars, walls, and obstacles. When it's taut, it's taut — no cheating the limit.</p>
+        </article>
+
+        <article class="feature-card feature-card--gold reveal" style="transition-delay: 0.15s">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          </div>
+          <h3 class="feature-card__title">Pendulum Swing</h3>
+          <p class="feature-card__desc">Latch onto overhead handles and swing across gaps with real pendulum momentum. Pump with WASD, release to launch.</p>
+        </article>
+
+        <article class="feature-card feature-card--white reveal" style="transition-delay: 0.2s">
+          <div class="feature-card__icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+          </div>
+          <h3 class="feature-card__title">Puzzle Doors</h3>
+          <p class="feature-card__desc">Color-coded scanner panels require the matching hand. Aim carefully — wrong hand gets rejected. Right hand opens the way.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ CONTROLS ════════════ -->
+  <section class="controls">
+    <div class="container">
+      <div class="controls__inner reveal">
+        <h2 class="controls__heading">Controls</h2>
+
+        <div class="control-group">
+          <p class="control-group__title">Movement</p>
+          <div class="control-row"><span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span> <span>Move</span></div>
+          <div class="control-row"><span class="key">SPACE</span> <span>Jump</span></div>
+          <div class="control-row"><span class="key">SHIFT</span> <span>Crouch</span></div>
+          <div class="control-row"><span class="key">MOUSE</span> <span>Look around</span></div>
+        </div>
+
+        <div class="control-group">
+          <p class="control-group__title">Grabpack</p>
+          <div class="control-row"><span class="key key--blue">LMB</span> <span>Blue hand — grab / scan</span></div>
+          <div class="control-row"><span class="key key--red">RMB</span> <span>Red hand — grab / scan</span></div>
+          <div class="control-row"><span class="key">HOLD</span> <span>Hold to maintain grip</span></div>
+          <div class="control-row"><span class="key">RELEASE</span> <span>Let go to throw / launch</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════ BOTTOM CTA ════════════ -->
+  <section class="cta-banner">
+    <div class="container">
+      <h2 class="cta-banner__heading reveal">Ready to Grab?</h2>
+      <p class="cta-banner__sub reveal" style="transition-delay: 0.1s">No install. No download. Just click and play.</p>
+      <a href="/grabpack/play/" class="hero__cta reveal" role="button" style="transition-delay: 0.2s">
+        <span>Launch Game</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ════════════ FOOTER ════════════ -->
+  <footer>
+    <div class="container">
+      <p><span class="credit">A game by Diego Valle</span></p>
+    </div>
+  </footer>
+
+  <!-- ════════════ SCROLL REVEAL ════════════ -->
+  <script>
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      }
+    }, { threshold: 0.15 });
+    reveals.forEach(el => observer.observe(el));
+  </script>
+
+  <!-- Glowing orb -->
+  <script>
+  (() => {
+    const canvas = document.getElementById('orb-canvas');
+    const ctx = canvas.getContext('2d');
+    let w, h;
+
+    function resize() {
+      w = canvas.width  = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Orb state — slow drifting path using sine waves
+    const orb = {
+      radius: 120,
+      // Phase offsets so it doesn't start exactly at center
+      px: Math.random() * Math.PI * 2,
+      py: Math.random() * Math.PI * 2,
+      // Speed multipliers (very slow drift)
+      sx: 0.15 + Math.random() * 0.05,
+      sy: 0.10 + Math.random() * 0.05,
+    };
+
+    // Color cycles between blue and red
+    function lerpColor(t) {
+      // t goes 0→1→0, blend between blue (#4ea8ff) and red (#ff4e4e)
+      const r = Math.round(78  + (255 - 78)  * t);
+      const g = Math.round(168 + (78  - 168) * t);
+      const b = Math.round(255 + (78  - 255) * t);
+      return `${r}, ${g}, ${b}`;
+    }
+
+    function draw(time) {
+      const t = time * 0.001;
+      ctx.clearRect(0, 0, w, h);
+
+      // Position: wanders across full viewport
+      const x = w * 0.5 + Math.sin(t * orb.sx + orb.px) * w * 0.4;
+      const y = h * 0.5 + Math.sin(t * orb.sy + orb.py) * h * 0.35;
+
+      // Color blend (slow cycle)
+      const colorT = (Math.sin(t * 0.2) + 1) * 0.5;
+      const rgb = lerpColor(colorT);
+
+      // Draw radial gradient orb
+      const grad = ctx.createRadialGradient(x, y, 0, x, y, orb.radius);
+      grad.addColorStop(0,   `rgba(${rgb}, 0.25)`);
+      grad.addColorStop(0.4, `rgba(${rgb}, 0.08)`);
+      grad.addColorStop(1,   `rgba(${rgb}, 0)`);
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(x, y, orb.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      requestAnimationFrame(draw);
+    }
+
+    requestAnimationFrame(draw);
+  })();
+  </script>
+
+</body>
+</html>
