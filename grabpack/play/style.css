@@ -1,0 +1,233 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  overflow: hidden;
+  background: #000;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+#game {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ── Back Button ── */
+#back-btn {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 30;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+  pointer-events: auto;
+}
+#back-btn:hover {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ── Crosshair ── */
+#crosshair {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 10;
+}
+#crosshair::before,
+#crosshair::after {
+  content: '';
+  position: absolute;
+  background: rgba(255, 255, 255, 0.7);
+}
+#crosshair::before {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  transform: translateY(-50%);
+}
+#crosshair::after {
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+/* ── Click Overlay ── */
+#overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.82);
+  z-index: 20;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+#overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#overlay-content {
+  max-width: 520px;
+  text-align: center;
+}
+
+#overlay-title {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #4ea8ff, #fff 50%, #ff4e4e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#overlay-controls {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.ctrl-col h3 {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 0.6rem;
+}
+
+.ctrl-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.ctrl-row span {
+  font-size: 0.8rem;
+  color: #999;
+  margin-left: 0.3rem;
+}
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 0.4em;
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ddd;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+kbd.blue { border-color: rgba(78, 168, 255, 0.4); color: #4ea8ff; }
+kbd.red  { border-color: rgba(255, 78, 78, 0.4); color: #ff4e4e; }
+
+#overlay-hint {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1; }
+}
+
+/* ── HUD ── */
+#hud {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  z-index: 10;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  opacity: 0.4;
+  transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+#hand-left {
+  background: rgba(78, 168, 255, 0.25);
+  color: #4ea8ff;
+  border: 2px solid #4ea8ff;
+}
+#hand-right {
+  background: rgba(255, 78, 78, 0.25);
+  color: #ff4e4e;
+  border: 2px solid #ff4e4e;
+}
+.hand-icon.active {
+  opacity: 1;
+  transform: scale(1.15);
+  box-shadow: 0 0 12px currentColor;
+}
+
+/* Rope gauge */
+#rope-gauge {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+}
+.rope-track {
+  width: 6px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+.rope-bar {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  transition: height 0.1s ease-out;
+}
+.rope-bar.blue { background: #4ea8ff; }
+.rope-bar.red  { background: #ff4e4e; }

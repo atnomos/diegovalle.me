@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grabpack Simulator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <a id="back-btn" href="/" title="Back to Home">&larr;</a>
+  <div id="crosshair"></div>
+
+  <div id="overlay">
+    <div id="overlay-content">
+      <h1 id="overlay-title">GRABPACK</h1>
+      <div id="overlay-controls">
+        <div class="ctrl-col">
+          <h3>Movement</h3>
+          <div class="ctrl-row"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>Move</span></div>
+          <div class="ctrl-row"><kbd>SPACE</kbd><span>Jump</span></div>
+          <div class="ctrl-row"><kbd>SHIFT</kbd><span>Crouch</span></div>
+          <div class="ctrl-row"><kbd>MOUSE</kbd><span>Look</span></div>
+        </div>
+        <div class="ctrl-col">
+          <h3>Grabpack</h3>
+          <div class="ctrl-row"><kbd class="blue">LEFT CLICK</kbd><span>Blue hand</span></div>
+          <div class="ctrl-row"><kbd class="red">RIGHT CLICK</kbd><span>Red hand</span></div>
+          <div class="ctrl-row"><kbd>HOLD</kbd><span>Grip / Swing</span></div>
+          <div class="ctrl-row"><kbd>RELEASE</kbd><span>Throw / Launch</span></div>
+        </div>
+      </div>
+      <p id="overlay-hint">Click anywhere to start</p>
+    </div>
+  </div>
+
+  <div id="hud">
+    <div id="hand-left" class="hand-icon">L</div>
+    <div id="rope-gauge">
+      <div class="rope-track">
+        <div id="rope-bar-left" class="rope-bar blue"></div>
+      </div>
+      <div class="rope-track">
+        <div id="rope-bar-right" class="rope-bar red"></div>
+      </div>
+    </div>
+    <div id="hand-right" class="hand-icon">R</div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/",
+      "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+    }
+  }
+  </script>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
