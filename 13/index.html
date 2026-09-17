@@ -9,12 +9,205 @@
   <meta property="og:description" content="Saturday, October 10, noon to three. Pinstripes, Hillsdale Mall.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://diegovalle.me/13/">
-  <meta property="og:image" content="https://images.lumacdn.com/event-social/99/840ebd90-3e58-4137-88cd-6d27fc366a42.png">
-  <link rel="canonical" href="https://luma.com/j0g5ba46">
-  <meta http-equiv="refresh" content="0; url=https://luma.com/j0g5ba46">
-  <script>location.replace("https://luma.com/j0g5ba46");</script>
+  <meta property="og:image" content="https://diegovalle.me/13/diego.jpg">
+  <link rel="canonical" href="https://diegovalle.me/13/">
+  <style>
+    :root {
+      --bg: #07060c;
+      --card: rgba(12, 12, 18, 0.72);
+      --line: rgba(255, 255, 255, 0.12);
+      --text: #f4f4f7;
+      --mute: rgba(244, 244, 247, 0.72);
+    }
+    * { box-sizing: border-box; margin: 0; }
+    html, body { min-height: 100%; background: var(--bg); color: var(--text); }
+    body {
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+      line-height: 1.45;
+    }
+    .sky {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(1200px 700px at 50% -10%, rgba(90, 70, 160, 0.28), transparent 60%),
+        repeating-conic-gradient(from 10deg at 50% 8%, transparent 0 8deg, rgba(120, 200, 255, 0.05) 8.2deg, transparent 9deg),
+        repeating-conic-gradient(from 190deg at 50% 8%, transparent 0 7deg, rgba(255, 80, 180, 0.04) 7.3deg, transparent 8deg),
+        #07060c;
+      pointer-events: none;
+    }
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(1080px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2.5rem 0 4rem;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+      gap: 2rem;
+      align-items: start;
+    }
+    .photo {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 18px;
+      display: block;
+    }
+    h1 {
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin: 0.15rem 0 1.1rem;
+    }
+    .meta {
+      display: grid;
+      gap: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 2.4rem 1fr;
+      gap: 0.7rem;
+      align-items: start;
+    }
+    .icon {
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      display: grid;
+      place-items: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.05;
+      color: var(--mute);
+    }
+    .row strong { display: block; font-size: 1rem; }
+    .row span { color: var(--mute); font-size: 0.95rem; }
+    .row a { color: inherit; text-decoration: none; }
+    .row a:hover { text-decoration: underline; }
+    .panel {
+      margin-top: 0.4rem;
+      padding: 1.1rem 1.15rem 1.15rem;
+      border-radius: 16px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+    .rsvp {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background: #fff;
+      color: #2b1d6b;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+    }
+    .rsvp:hover { filter: brightness(0.96); }
+    .rsvp:focus-visible { outline: 3px solid #8b7cff; outline-offset: 3px; }
+    .sections {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 2.5rem;
+      margin-top: 2.75rem;
+      padding-top: 0.5rem;
+    }
+    .host {
+      font-size: 0.8rem;
+      letter-spacing: 0.02em;
+      color: var(--mute);
+      margin-bottom: 0.7rem;
+    }
+    .host-name { font-weight: 600; font-size: 1rem; color: var(--text); }
+    h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--mute);
+      margin: 0 0 0.65rem;
+    }
+    .block { margin-bottom: 1.75rem; }
+    .map {
+      width: 100%;
+      height: 220px;
+      border: 0;
+      border-radius: 14px;
+      margin-top: 0.75rem;
+    }
+    @media (max-width: 800px) {
+      .hero, .sections { grid-template-columns: 1fr; }
+      .photo { max-width: 28rem; }
+    }
+  </style>
 </head>
 <body>
-  <p><a href="https://luma.com/j0g5ba46">Diego’s 13th birthday</a></p>
+  <div class="sky" aria-hidden="true"></div>
+  <main class="page">
+    <section class="hero">
+      <img class="photo" src="diego.jpg" alt="Diego Valle">
+      <div>
+        <h1>Diego’s 13th birthday!</h1>
+        <div class="meta">
+          <div class="row">
+            <div class="icon">OCT<br>10</div>
+            <div>
+              <strong>Saturday, October 10</strong>
+              <span>12:00 PM – 3:00 PM</span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            </div>
+            <div>
+              <strong><a href="https://www.google.com/maps/search/?api=1&query=Pinstripes&query_place_id=ChIJbUWR7Zafj4ARMYECIC0Iey0">Pinstripes</a></strong>
+              <span>San Mateo, CA</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <a
+            class="rsvp"
+            href="https://luma.com/j0g5ba46"
+            data-luma-action="checkout"
+            data-luma-event-id="evt-cC3O8iEmAqfELRD"
+          >Register</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="sections">
+      <aside>
+        <p class="host">Hosted By</p>
+        <p class="host-name">Wilfredo Valle</p>
+      </aside>
+      <div>
+        <section class="block">
+          <h2>About Event</h2>
+          <p>Come celebrate Diego’s birthday!</p>
+        </section>
+        <section class="block">
+          <h2>Location</h2>
+          <p><strong>Pinstripes</strong></p>
+          <p>36 Hillsdale Mall, San Mateo, CA 94403, USA</p>
+          <iframe
+            class="map"
+            title="Map of Pinstripes, Hillsdale Mall"
+            src="https://maps.google.com/maps?q=Pinstripes+36+Hillsdale+Mall+San+Mateo+CA&output=embed"
+            loading="lazy"
+          ></iframe>
+        </section>
+      </div>
+    </div>
+  </main>
+  <script id="luma-checkout" src="https://embed.lu.ma/checkout-button.js"></script>
 </body>
 </html>
